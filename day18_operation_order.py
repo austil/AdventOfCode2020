@@ -6,26 +6,29 @@
 import unittest
 from typing import List
 
+def apply(stack, operators):
+    while ( len(stack) >= 3
+        and stack[-3].isdigit()
+        and stack[-2] in operators
+        and stack[-1].isdigit()):
+        expr = f'{stack[-3]} {stack[-2]} {stack[-1]}'
+        stack = stack[:-3]
+        stack.append(str(eval(expr)))
+    return stack
+
 def compute(operation):
     parts = operation.replace('(', ' ( ').replace(')', ' ) ').split(' ')
     stack = []
     for p in parts:
         if p == ')':
-            # remove parenthesis
+            # get rid of parenthesis
             assert stack[-2] == '(' and stack[-1].isdigit()
             stack = stack[:-2] + [stack[-1]]
         elif p != '':
-            # stack
             stack.append(p)
-        
-        while ( len(stack) >= 3
-            and stack[-3].isdigit()
-            and stack[-2] in ['+', '*']
-            and stack[-1].isdigit()):
-            # apply operator as we go, from left to right
-            expr = f'{stack[-3]} {stack[-2]} {stack[-1]}'
-            stack = stack[:-3]
-            stack.append(str(eval(expr)))
+
+        # apply ALL operators as we go
+        stack = apply(stack, ['+', '*'])
 
     assert len(stack) == 1
     return int(stack[0])
@@ -35,38 +38,18 @@ def compute2(operation):
     stack = []
     for p in parts:
         if p == ')':
-            while ( len(stack) >= 3
-                and stack[-3].isdigit()
-                and stack[-2] in ['*']
-                and stack[-1].isdigit()):
-                # apply operator as we go, from left to right
-                expr = f'{stack[-3]} {stack[-2]} {stack[-1]}'
-                stack = stack[:-3]
-                stack.append(str(eval(expr)))
-            # remove parenthesis
+            stack = apply(stack, ['*'])
+            # get rid of parenthesis
             assert stack[-2] == '(' and stack[-1].isdigit()
             stack = stack[:-2] + [stack[-1]]
         elif p != '':
             # stack
             stack.append(p)
         
-        while ( len(stack) >= 3
-            and stack[-3].isdigit()
-            and stack[-2] in ['+']
-            and stack[-1].isdigit()):
-            # apply operator as we go, from left to right
-            expr = f'{stack[-3]} {stack[-2]} {stack[-1]}'
-            stack = stack[:-3]
-            stack.append(str(eval(expr)))
+        # apply only + as we go
+        stack = apply(stack, ['+'])
         
-    while ( len(stack) >= 3
-        and stack[-3].isdigit()
-        and stack[-2] in ['*']
-        and stack[-1].isdigit()):
-        # apply operator as we go, from left to right
-        expr = f'{stack[-3]} {stack[-2]} {stack[-1]}'
-        stack = stack[:-3]
-        stack.append(str(eval(expr)))
+    stack = apply(stack, ['*'])
 
     assert len(stack) == 1
     return int(stack[0])
@@ -98,3 +81,4 @@ with open("puzzle_inputs/day18.txt", "r") as f:
     print('Part 1:', sum([compute(e.strip()) for e in input]))
     assert sum([compute(e.strip()) for e in input]) == 9535936849815
     print('Part 2:', sum([compute2(e.strip()) for e in input]))
+    assert sum([compute2(e.strip()) for e in input]) == 472171581333710
