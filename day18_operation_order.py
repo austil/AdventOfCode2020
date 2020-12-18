@@ -10,20 +10,24 @@ def compute(operation):
     parts = operation.replace('(', ' ( ').replace(')', ' ) ').split(' ')
     stack = []
     for p in parts:
-        if len(stack) and stack[-1] in ['+', '*'] and p.isdigit():
-            expr = f'{stack[-2]} {stack[-1]} {p}'
-            stack = stack[:-2]
-            stack.append(str(eval(expr)))
-        elif p == ')':
-            r = stack[-1]
-            stack = stack[:-2]
-            stack.append(r)
-            while len(stack) >= 3 and stack[-2] in ['+', '*']:
-                expr = f'{stack[-3]} {stack[-2]} {stack[-1]}'
-                stack = stack[:-3]
-                stack.append(str(eval(expr)))
+        if p == ')':
+            # remove parenthesis
+            assert stack[-2] == '(' and stack[-1].isdigit()
+            stack = stack[:-2] + [stack[-1]]
         elif p != '':
+            # stack
             stack.append(p)
+        
+        while ( len(stack) >= 3
+            and stack[-3].isdigit()
+            and stack[-2] in ['+', '*']
+            and stack[-1].isdigit()):
+            # apply operator as we go, from left to right
+            expr = f'{stack[-3]} {stack[-2]} {stack[-1]}'
+            stack = stack[:-3]
+            stack.append(str(eval(expr)))
+
+    assert len(stack) == 1
     return int(stack[0])
 
 class SamplesTests(unittest.TestCase):
@@ -46,3 +50,4 @@ print("\n------\n")
 with open("puzzle_inputs/day18.txt", "r") as f:
     input = f.readlines()
     print('Part 1:', sum([compute(e.strip()) for e in input]))
+    assert sum([compute(e.strip()) for e in input]) == 9535936849815
