@@ -22,8 +22,11 @@ def handleSelfReferringRules(n, parts, index):
         return '(' + expanded + ')+'
 
     def get2(p = otherSide):
-        expanded = ''.join([index[r]() + '+' for r in p])
-        return '(' + expanded + ')+'
+        # Hardcode some possibilities and hope it's enough (hack found of AoC subreddit)
+        a = index[p[0]]()
+        b = index[p[1]]()
+        expanded = '|'.join(f'{a}{{{n}}}{b}{{{n}}}' for n in range(1, 10))
+        return '(' + expanded + ')'
 
     return get2 if selfRefIsNested else get1
 
@@ -85,7 +88,7 @@ class SamplesTests(unittest.TestCase):
         sampleRulesWithLoop = [
             '0: 8',
             '8: 42 | 42 8',
-            '11: 42 31 | 42 11 31', # Can regex match this type of patterns ?!!!
+            '11: 42 31 | 42 11 31', # Can Python regex match this type of patterns => Nope
             '42: "a"',
             '31: "b"',
         ]
